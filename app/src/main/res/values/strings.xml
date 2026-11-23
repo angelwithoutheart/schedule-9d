@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Расписание 9Д</string>
+    <string name="widget_label">Расписание 9Д</string>
+    <string name="widget_description">Уроки и консультации ОГЭ для 9Д</string>
+    <string name="share_title">Распознать расписание 9Д</string>
+</resources>

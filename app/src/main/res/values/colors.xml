@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="schedule_background">#0F1118</color>
+    <color name="schedule_surface">#161821</color>
+    <color name="schedule_accent">#5CA8FF</color>
+    <color name="ic_launcher_background">#161821</color>
+</resources>
