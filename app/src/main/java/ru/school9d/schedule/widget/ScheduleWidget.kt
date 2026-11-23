@@ -139,10 +139,10 @@ private fun CompactWidget(data: WidgetUiData, radius: Dp) {
                     text = item.title,
                     style = TextStyle(
                         color = WidgetWhite,
-                        fontSize = 15.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     ),
-                    maxLines = 1
+                    maxLines = 2
                 )
                 if (item.room != null) {
                     Spacer(GlanceModifier.height(3.dp))
