@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ru.school9d.schedule.alarm.AlarmScheduler
+import androidx.compose.runtime.Immutable
 import ru.school9d.schedule.data.AppDefaults
 import ru.school9d.schedule.data.Consultation
 import ru.school9d.schedule.data.ConsultationsDefaults
@@ -33,6 +33,7 @@ import ru.school9d.schedule.util.toNumericRu
 import ru.school9d.schedule.widget.ScheduleWidget
 import java.time.LocalDate
 
+@Immutable
 data class MainUiState(
     val todayDate: LocalDate = LocalDate.now(),
     val tomorrowDate: LocalDate = LocalDate.now().plusDays(1),
@@ -107,6 +108,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun refreshWidget() {
+        val app = getApplication<Application>()
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { repository.ensureDefaults() }
+            runCatching { ScheduleWidget().updateAll(app) }
+        }
+    }
+
     fun recognizeImage(uri: Uri) {
         if (processingFlow.value) return
         viewModelScope.launch {
@@ -157,7 +166,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 withContext(Dispatchers.IO) {
                     repository.saveConsultation(consultation)
-                    runCatching { AlarmScheduler.rescheduleSuspend(app) }
                     runCatching { ScheduleWidget().updateAll(app) }
                 }
                 _messages.tryEmit("Консультация «${consultation.title}» сохранена")
@@ -174,10 +182,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _messages.tryEmit("API-ключ не может быть пустым")
             return
         }
+        val app = getApplication<Application>()
         viewModelScope.launch {
             try {
-                repository.saveApiKey(apiKey)
-                repository.saveModel(model)
+                withContext(Dispatchers.IO) {
+                    repository.saveApiKey(apiKey)
+                    repository.saveModel(model)
+                    runCatching { ScheduleWidget().updateAll(app) }
+                }
                 _messages.tryEmit("Настройки OpenRouter сохранены")
             } catch (cancellation: CancellationException) {
                 throw cancellation

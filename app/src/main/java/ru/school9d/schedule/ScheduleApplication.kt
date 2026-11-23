@@ -6,7 +6,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import ru.school9d.schedule.alarm.AlarmScheduler
 import ru.school9d.schedule.data.ScheduleRepository
 import ru.school9d.schedule.widget.ScheduleWidget
 
@@ -20,7 +19,6 @@ class ScheduleApplication : Application() {
         appScope.launch {
             runCatching { ScheduleRepository.get(context).ensureDefaults() }
             runCatching { ScheduleWidget().updateAll(context) }
-            runCatching { AlarmScheduler.rescheduleSuspend(context) }
         }
     }
 }

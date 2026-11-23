@@ -1,9 +1,11 @@
 package ru.school9d.schedule.data
 
+import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.LocalTime
 
+@Immutable
 @Serializable
 data class Lesson(
     val number: Int = 0,
@@ -11,6 +13,7 @@ data class Lesson(
     val room: String = ""
 )
 
+@Immutable
 @Serializable
 data class SavedSchedule(
     val date: String,
@@ -19,6 +22,7 @@ data class SavedSchedule(
     val recognizedAt: Long = 0L
 )
 
+@Immutable
 @Serializable
 data class Consultation(
     val id: String,
@@ -36,6 +40,7 @@ data class ConsultationList(
     val items: List<Consultation> = emptyList()
 )
 
+@Immutable
 data class AppSettings(
     val apiKey: String = "",
     val model: String = AppDefaults.DEFAULT_MODEL
@@ -46,6 +51,7 @@ enum class ItemKind {
     CONSULTATION
 }
 
+@Immutable
 data class DayItem(
     val kind: ItemKind,
     val number: Int?,
@@ -56,6 +62,7 @@ data class DayItem(
     val typeLabel: String
 )
 
+@Immutable
 data class DaySchedule(
     val date: LocalDate,
     val dayOfWeek: Int,

@@ -15,10 +15,11 @@ import java.time.LocalDate
 private val Context.scheduleDataStore by preferencesDataStore(name = "schedule_9d")
 
 private object Keys {
+    const val SCHEDULE_PREFIX = "schedule_"
     val API_KEY = stringPreferencesKey("openrouter_api_key")
     val MODEL = stringPreferencesKey("openrouter_model")
     val CONSULTATIONS = stringPreferencesKey("oge_consultations")
-    fun schedule(date: String) = stringPreferencesKey("schedule_$date")
+    fun schedule(date: String) = stringPreferencesKey("$SCHEDULE_PREFIX$date")
 }
 
 class ScheduleRepository private constructor(context: Context) {
@@ -93,6 +94,17 @@ class ScheduleRepository private constructor(context: Context) {
             recognizedAt = if (schedule.recognizedAt > 0) schedule.recognizedAt else System.currentTimeMillis()
         )
         dataStore.edit { prefs ->
+            val cutoff = LocalDate.now().minusDays(7)
+            prefs.asMap().keys
+                .mapNotNull { key ->
+                    if (!key.name.startsWith(Keys.SCHEDULE_PREFIX)) return@mapNotNull null
+                    runCatching {
+                        LocalDate.parse(key.name.removePrefix(Keys.SCHEDULE_PREFIX))
+                    }.getOrNull()
+                }
+                .filter { it.isBefore(cutoff) }
+                .forEach { oldDate -> prefs.remove(Keys.schedule(oldDate.toString())) }
+
             prefs[Keys.schedule(normalized.date)] = json.encodeToString(
                 SavedSchedule.serializer(),
                 normalized

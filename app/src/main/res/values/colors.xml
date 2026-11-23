@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="schedule_background">#0F1118</color>
-    <color name="schedule_surface">#161821</color>
-    <color name="schedule_accent">#5CA8FF</color>
-    <color name="ic_launcher_background">#161821</color>
+    <color name="schedule_background">#000000</color>
+    <color name="schedule_surface">#1C1C1E</color>
+    <color name="schedule_plate">#252528</color>
+    <color name="schedule_separator">#2C2C2E</color>
+    <color name="schedule_accent">#0A84FF</color>
+    <color name="schedule_text_secondary">#8E8E93</color>
+    <color name="ic_launcher_background">#1C1C1E</color>
 </resources>

@@ -24,3 +24,12 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
+
+# Glance widget and its reflection-based action callbacks
+-keep class ru.school9d.schedule.widget.** { *; }
+-keep class * implements androidx.glance.appwidget.action.ActionCallback { *; }
+-keep class androidx.glance.appwidget.** { *; }
+
+# Serialized schedule models and OpenRouter payloads
+-keep class ru.school9d.schedule.data.** { *; }
+-keep class ru.school9d.schedule.ai.** { *; }

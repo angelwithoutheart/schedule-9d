@@ -3,12 +3,9 @@ package ru.school9d.schedule.util
 import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.ImageDecoder
 import android.graphics.Matrix
 import android.net.Uri
-import android.os.Build
 import android.util.Base64
-import androidx.annotation.RequiresApi
 import androidx.exifinterface.media.ExifInterface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,14 +17,16 @@ import kotlin.math.roundToInt
 object ImageCompressor {
 
     private const val MAX_SIDE = 1600
-    private const val JPEG_QUALITY = 80
+    private const val JPEG_QUALITY = 82
 
     suspend fun toDataUrl(resolver: ContentResolver, uri: Uri): String = withContext(Dispatchers.IO) {
-        val bitmap = decodeScaled(resolver, uri)
+        var bitmap = decodeSampled(resolver, uri)
         try {
+            bitmap = applyExifOrientation(resolver, uri, bitmap)
+            bitmap = scaleDown(bitmap, MAX_SIDE)
+
             val output = ByteArrayOutputStream()
-            val compressed = bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, output)
-            if (!compressed) {
+            if (!bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, output)) {
                 throw IOException("Не удалось сжать изображение")
             }
             val base64 = Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
@@ -37,34 +36,11 @@ object ImageCompressor {
         }
     }
 
-    private fun decodeScaled(resolver: ContentResolver, uri: Uri): Bitmap {
-        val decoded = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            decodeModern(resolver, uri)
-        } else {
-            decodeLegacy(resolver, uri)
-        }
-        return scaleDown(decoded, MAX_SIDE)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    private fun decodeModern(resolver: ContentResolver, uri: Uri): Bitmap {
-        val source = ImageDecoder.createSource(resolver, uri)
-        return ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
-            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-            val maxDimension = max(info.size.width, info.size.height)
-            if (maxDimension > MAX_SIDE) {
-                val scale = MAX_SIDE.toFloat() / maxDimension
-                val width = max(1, (info.size.width * scale).roundToInt())
-                val height = max(1, (info.size.height * scale).roundToInt())
-                decoder.setTargetSize(width, height)
-            }
-        }
-    }
-
-    private fun decodeLegacy(resolver: ContentResolver, uri: Uri): Bitmap {
+    private fun decodeSampled(resolver: ContentResolver, uri: Uri): Bitmap {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
-            ?: throw IOException("Не удалось открыть изображение")
+        resolver.openInputStream(uri)?.use { stream ->
+            BitmapFactory.decodeStream(stream, null, bounds)
+        } ?: throw IOException("Не удалось открыть изображение")
 
         if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
             throw IOException("Не удалось прочитать изображение")
@@ -78,12 +54,18 @@ object ImageCompressor {
 
         val options = BitmapFactory.Options().apply {
             inSampleSize = sampleSize
-            inPreferredConfig = Bitmap.Config.ARGB_8888
+            inPreferredConfig = Bitmap.Config.RGB_565
         }
-        val bitmap = resolver.openInputStream(uri)?.use {
-            BitmapFactory.decodeStream(it, null, options)
+        return resolver.openInputStream(uri)?.use { stream ->
+            BitmapFactory.decodeStream(stream, null, options)
         } ?: throw IOException("Не удалось декодировать изображение")
+    }
 
+    private fun applyExifOrientation(
+        resolver: ContentResolver,
+        uri: Uri,
+        source: Bitmap
+    ): Bitmap {
         val orientation = runCatching {
             resolver.openInputStream(uri)?.use { stream ->
                 ExifInterface(stream).getAttributeInt(
@@ -110,10 +92,10 @@ object ImageCompressor {
             }
         }
 
-        if (matrix.isIdentity) return bitmap
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        if (matrix.isIdentity) return source
+        return Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
             .also { rotated ->
-                if (rotated !== bitmap) bitmap.recycle()
+                if (rotated !== source && !source.isRecycled) source.recycle()
             }
     }
 
@@ -124,7 +106,7 @@ object ImageCompressor {
         val width = max(1, (bitmap.width * scale).roundToInt())
         val height = max(1, (bitmap.height * scale).roundToInt())
         val scaled = Bitmap.createScaledBitmap(bitmap, width, height, true)
-        if (scaled !== bitmap) bitmap.recycle()
+        if (scaled !== bitmap && !bitmap.isRecycled) bitmap.recycle()
         return scaled
     }
 }

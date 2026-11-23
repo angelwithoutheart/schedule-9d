@@ -7,30 +7,36 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 object AppPalette {
-    val Background = Color(0xFF0F1118)
-    val Surface = Color(0xFF161821)
-    val SurfaceElevated = Color(0xFF232736)
-    val Border = Color(0xFF2E3346)
-    val Accent = Color(0xFF5CA8FF)
-    val AccentSecondary = Color(0xFF8B7BFF)
+    val Background = Color(0xFF000000)
+    val Surface = Color(0xFF1C1C1E)
+    val SurfaceMuted = Color(0xFF252528)
+    val SurfaceElevated = Color(0xFF2C2C2E)
+    val Separator = Color(0xFF2C2C2E)
+    val Accent = Color(0xFF0A84FF)
+    val Green = Color(0xFF30D158)
     val TextPrimary = Color(0xFFFFFFFF)
-    val TextMuted = Color(0xFF8E92A4)
-    val Danger = Color(0xFFFF8A80)
-    val DarkText = Color(0xFF0B1220)
+    val TextSecondary = Color(0xFF8E8E93)
+    val TextTertiary = Color(0xFF636366)
+    val Danger = Color(0xFFFF453A)
+    val DarkText = Color(0xFFFFFFFF)
+
+    // Legacy aliases used by the share dialog.
+    val Border = Separator
+    val TextMuted = TextSecondary
 }
 
 private val DarkScheme = darkColorScheme(
     primary = AppPalette.Accent,
-    onPrimary = AppPalette.DarkText,
-    secondary = AppPalette.AccentSecondary,
-    onSecondary = AppPalette.DarkText,
+    onPrimary = Color.White,
+    secondary = AppPalette.Accent,
+    onSecondary = Color.White,
     background = AppPalette.Background,
     onBackground = AppPalette.TextPrimary,
     surface = AppPalette.Surface,
     onSurface = AppPalette.TextPrimary,
-    surfaceVariant = AppPalette.SurfaceElevated,
-    onSurfaceVariant = AppPalette.TextMuted,
-    outline = AppPalette.Border,
+    surfaceVariant = AppPalette.SurfaceMuted,
+    onSurfaceVariant = AppPalette.TextSecondary,
+    outline = AppPalette.Separator,
     error = AppPalette.Danger
 )
 

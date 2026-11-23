@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import ru.school9d.schedule.ai.OpenRouterClient
 import ru.school9d.schedule.ai.ScheduleParser
-import ru.school9d.schedule.alarm.AlarmScheduler
 import ru.school9d.schedule.data.SavedSchedule
 import ru.school9d.schedule.data.ScheduleRepository
 import ru.school9d.schedule.util.ImageCompressor
@@ -40,7 +39,6 @@ class ScheduleRecognitionService(context: Context) {
         val activeConsultations = repository.consultations()
             .count { it.enabled && it.dayOfWeek == schedule.dayOfWeek }
 
-        runCatching { AlarmScheduler.rescheduleSuspend(appContext) }
         runCatching { ScheduleWidget().updateAll(appContext) }
 
         RecognitionOutcome(schedule, activeConsultations)
